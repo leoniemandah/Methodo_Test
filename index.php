@@ -1,30 +1,6 @@
 <?php
 
-function estPalindrome($mot)
-{
-    $mot = strtolower(str_replace(' ', '', $mot));
-    return $mot == strrev($mot);
-}
-
-function salutation()
-{
-    $heure = date("H");
-    if ($heure < 12) {
-        return "Bonjour";
-    } else {
-        return "Bonsoir";
-    }
-}
-
-function testerPalindrome($mot)
-{
-    if (estPalindrome($mot)) {
-        return "Bien dit!";
-    } else {
-        return "Pas un palindrome.";
-    }
-}
-
+include ("./function.php");
 // Début du programme
 echo salutation() . "\n";
 
@@ -42,5 +18,14 @@ do {
 //a l'arrêt dire au revoir
 
 echo "Au revoir!\n";
+
+// // Tests individuels
+// $motTest = "radar";
+// echo "Le mot '$motTest' est un palindrome? " . (estPalindrome($motTest) ? "Oui" : "Non") . "\n";
+
+// echo "Salutation: " . salutation() . "\n";
+
+// $motTest2 = "test";
+// echo "Résultat du test pour '$motTest2': " . testerPalindrome($motTest2) . "\n";
 
 ?>
