@@ -1,21 +1,31 @@
 import * as os from "os";
-import {Expressions} from "../src/expressions";
-import {LangueFrançaise} from "../src/langueFrançaise";
+import './utilities/stringMatchers.d.ts';
+import './utilities/stringMatchers';
+import {Expressions} from "../src/domain/expressions";
+import {LangueFrançaise} from "../src/domain/langueFrançaise";
 import {VérificateurPalindromeBuilder} from "./utilities/vérificateurPalindromeBuilder";
-import {LangueAnglaise} from "../src/langueAnglaise";
-import {LangueInterface} from "../src/langue.interface";
+import {LangueAnglaise} from "../src/domain/langueAnglaise";
+import {LangueInterface} from "../src/domain/langue.interface";
 import {LangueFake} from "./utilities/langueFake";
-import {MomentDeLaJournée} from "../src/momentDeLaJournée";
+import {MomentDeLaJournée} from "../src/domain/momentDeLaJournée";
 
 const palindrome = 'radar';
 const nonPalindromes = ['test', 'ynov']
+const momentsDeLaJournée = [
+    MomentDeLaJournée.Inconnu,
+    MomentDeLaJournée.Matin,
+    MomentDeLaJournée.AprèsMidi,
+    MomentDeLaJournée.Soirée,
+    MomentDeLaJournée.Nuit
+];
 
-describe("test works", () => {
+describe("En tant qu'utilisateur je veux vérifier si un mot est un palindrome.", () => {
     test.each([...nonPalindromes])(
         "QUAND on saisit un non-palindrome %s " +
         "ALORS elle est renvoyée en miroir",
         (chaîne: string) => {
-            let résultat = VérificateurPalindromeBuilder.Default().Vérifier(chaîne);
+            let résultat = VérificateurPalindromeBuilder.Default()
+                .Vérifier(chaîne);
 
             let attendu = chaîne.split('').reverse().join('');
             expect(résultat).toContain(attendu);
@@ -38,26 +48,35 @@ describe("test works", () => {
             expect(résultat).toContain(palindrome + os.EOL + attendu);
         });
 
-    test.each([...nonPalindromes, palindrome])(
-        'ETANT DONNE un utilisateur parlant %s ' +
-        'ET que nous sommes le matin ' +
+    function casesSalutations(){
+        let chaînes = [...nonPalindromes, palindrome];
+        let cases: [MomentDeLaJournée, string][]  = [];
+
+        for (let momentDeLaJournée of momentsDeLaJournée)
+            for(let chaîne of chaînes)
+                cases.push([momentDeLaJournée, chaîne])
+
+        return cases;
+    }
+
+    test.each(casesSalutations())(
+        'ETANT DONNE un utilisateur parlant une langue ' +
+        'ET que nous sommes le %s ' +
         'QUAND on saisit une chaîne %s ' +
         'ALORS les salutations de cette langue à ce moment de la journée sont envoyées avant toute réponse',
-        (chaîne: string) => {
+        (momentDeLaJournée: MomentDeLaJournée, chaîne: string) => {
             let langueFake = new LangueFake();
-            let moment = MomentDeLaJournée.Matin;
 
             let vérificateur =
                 new VérificateurPalindromeBuilder()
                     .AyantPourLangue(langueFake)
-                    .AyantPourMomentDeLaJournée(moment)
+                    .AyantPourMomentDeLaJournée(momentDeLaJournée)
                     .Build();
 
             let résultat = vérificateur.Vérifier(chaîne);
-
-            let premièreLigne = résultat.split(os.EOL)[0];
-            let attendu = langueFake.Saluer(moment);
-            expect(premièreLigne).toEqual(attendu)
+            let attendu = langueFake.Saluer(momentDeLaJournée);
+            // @ts-ignore
+            expect(résultat).ayantPourPremièreLigne(attendu)
         });
 
     test.each([...nonPalindromes, palindrome])(
@@ -73,9 +92,8 @@ describe("test works", () => {
 
             let résultat = vérificateur.Vérifier(chaîne);
 
-            let lignes = résultat.split(os.EOL);
-            let dernièreLigne = lignes[lignes.length - 1];
-            expect(dernièreLigne).toEqual(Expressions.AU_REVOIR)
+            // @ts-ignore
+            expect(résultat).ayantPourDernièreLigne(Expressions.AU_REVOIR)
         });
 
     test.each([...nonPalindromes, palindrome])(
@@ -90,9 +108,7 @@ describe("test works", () => {
                     .Build();
 
             let résultat = vérificateur.Vérifier(chaîne);
-
-            let lignes = résultat.split(os.EOL);
-            let dernièreLigne = lignes[lignes.length - 1];
-            expect(dernièreLigne).toEqual(Expressions.GOODBYE)
+            // @ts-ignore
+            expect(résultat).ayantPourDernièreLigne(Expressions.GOODBYE)
         });
 });
